@@ -1,0 +1,18 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+
+require __DIR__ . '/vendor/autoload.php';
+
+use App\Application;
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+
+$container = new ContainerBuilder();
+$loader = new YamlFileLoader($container, new FileLocator());
+$loader->load(__DIR__ . '/config/services.yml');
+$container->compile();
+exit($container->get(Application::class)->run());

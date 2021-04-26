@@ -1,0 +1,33 @@
+imports:
+  - { resource: 'local.config.yml' }
+
+parameters:
+  version: 1.0
+  github.org: example-org
+
+services:
+  _defaults:
+    autowire: true
+    public: false
+
+  _instanceof:
+    Symfony\Component\Console\Command\Command:
+      bind:
+        $organizationName: '%github.org%'
+      tags: ['command']
+
+  App\:
+    lazy: true
+    resource: '../src'
+    exclude: '../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}'
+
+  App\Application:
+    public: true
+    arguments:
+      - !tagged command
+      - '%version%'
+
+  Github\Client:
+    class: Github\Client
+    factory: [ App\GitHub\GitHubClientFactory, 'get' ]
+    arguments: [ '%github.key%']
