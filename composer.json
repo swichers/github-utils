@@ -11,7 +11,8 @@
     "symfony/config": "^5.2",
     "symfony/yaml": "^5.2",
     "symfony/string": "^5.2",
-    "nesbot/carbon": "^2.46"
+    "nesbot/carbon": "^2.46",
+    "cache/filesystem-adapter": "^1.1"
   },
   "autoload": {
     "psr-4": {
