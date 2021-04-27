@@ -67,7 +67,7 @@ class ReportRepoInactive extends AbstractReportCommand {
 
     foreach ($repos as $repo) {
       $pushed_at = Carbon::createFromFormat('Y-m-d\TH:i:m\Z', $repo['pushed_at']);
-      if (Carbon::now()->subMonths(6)->gt($pushed_at)) {
+      if (empty($repo['pushed_at']) || Carbon::now()->subMonths(6)->gt($pushed_at)) {
         $inactive[] = [
           $repo['name'],
           $pushed_at->ago(),
