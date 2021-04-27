@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use Github\ResultPager;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Throwable;
 
 /**
  * Class ReportEmptyRepos
@@ -38,12 +37,15 @@ class ReportRepoEmpty extends AbstractReportCommand {
   protected function execute(InputInterface $input, OutputInterface $output): int {
 
     $output->writeLn('<info>Checking for repositories with no code.</info>');
-    $output->writeLn('This process can take a while.');
 
     $empty_repos = $this->getReportData($output);
     if (!empty($empty_repos)) {
       asort($empty_repos);
+      $output->writeln('');
       $this->tableOutput($output, ['Repository'], $empty_repos);
+      $output->writeln('');
+      $output->writeln('<comment>These repositories may not have code, or may only contain a README.</comment>');
+      $output->writeln('<comment>They should be manually reviewed before any permanent action is taken.</comment>');
     }
     else {
       $output->writeln('<info>All repos appear to have code!</info>');
@@ -56,29 +58,18 @@ class ReportRepoEmpty extends AbstractReportCommand {
    * {@inheritdoc}
    */
   protected function getReportData(OutputInterface $output): array {
-    $slugs = $this->getAllSlugs($this->gh, 'repos', 'org', 'name');
 
-    $empty_repos = [];
+    $paginator = new ResultPager($this->gh);
+    $repos = $paginator->fetchAll($this->gh->api('repos'), 'org', [$this->org_name]);
 
-    $progress = new ProgressBar($output);
-    foreach ($progress->iterate($slugs) as $repo_name) {
-      try {
-        $this->rateLimit($this->gh);
-        $result = $this->gh->repo()->contributors($this->org_name, $repo_name);
-      } catch (Throwable $x) {
-        $output->writeLn('<error>An error was encountered while fetching a repo.</error>');
-        $output->writeLn($repo_name . ': ' . $x->getMessage());
-        continue;
-      }
+    return array_column(array_filter($repos, static function ($repo) {
+      $probably_empty = empty($repo['pushed_at']);
+      $probably_empty |= $repo['pushed_at'] === $repo['created_at'];
+      $probably_empty |= $repo['updated_at'] === $repo['created_at'];
+      $probably_empty |= $repo['size'] <= 0;
 
-      if (empty($result)) {
-        $empty_repos[] = $repo_name;
-      }
-    }
-
-    $output->writeln('');
-
-    return $empty_repos;
+      return $probably_empty;
+    }), 'name');
   }
 
 }
