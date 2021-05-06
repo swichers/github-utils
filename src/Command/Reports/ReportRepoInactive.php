@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Command;
+namespace App\Command\Reports;
 
 use Carbon\Carbon;
 use Github\ResultPager;
@@ -14,9 +14,6 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Class ReportDeadRepos
  */
 class ReportRepoInactive extends AbstractReportCommand {
-
-  use RateLimit;
-  use AllSlugs;
 
   /**
    * {@inheritdoc}

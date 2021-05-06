@@ -1,8 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Command;
+namespace App\Command\Reports;
 
+use App\Command\AllSlugs;
+use App\Command\RateLimit;
 use Github\Client;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
@@ -12,6 +14,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Class AbstractReportCommand
  */
 abstract class AbstractReportCommand extends Command {
+
+  use RateLimit;
+  use AllSlugs;
 
   /**
    * A GitHub client instance.

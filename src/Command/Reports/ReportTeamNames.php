@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Command;
+namespace App\Command\Reports;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,8 +13,6 @@ use function Symfony\Component\String\s;
  * Class ReportBadNames
  */
 class ReportTeamNames extends AbstractReportCommand {
-
-  use AllSlugs;
 
   /**
    * {@inheritdoc}

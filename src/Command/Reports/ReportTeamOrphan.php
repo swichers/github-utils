@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Command;
+namespace App\Command\Reports;
 
 use Github\HttpClient\Message\ResponseMediator;
 use Symfony\Component\Console\Command\Command;
@@ -15,9 +15,6 @@ use Throwable;
  * Class ReportOrphanTeams
  */
 class ReportTeamOrphan extends AbstractReportCommand {
-
-  use RateLimit;
-  use AllSlugs;
 
   /**
    * {@inheritdoc}
