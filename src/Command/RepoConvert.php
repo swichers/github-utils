@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Command;
 
 use Github\Client;
+use Github\HttpClient\Message\ResponseMediator;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
@@ -109,7 +110,16 @@ class RepoConvert extends Command {
 
     asort($permissions);
 
-    $io->section('Migrating the following teams');
+    $io->title('GitHub Team to Member Migration');
+    $io->text([
+      'This command will:',
+      '',
+      '* Migrate repository team members directly to the repository',
+      '* Remove teams from that repository',
+      '* Delete those teams which no longer have any associated repository',
+    ]);
+
+    $io->section('Teams');
     $io->listing(array_keys($teams));
 
     // Wrap each item in an array so we can make a nice display.
@@ -125,38 +135,39 @@ class RepoConvert extends Command {
     }
 
     foreach ($permissions as $member => $permission) {
-
-      $io->writeln([
+      $io->text([
         'Migrating ' . $member,
         sprintf('..Adding with %s permission', $permission),
       ]);
+      $io->newLine();
 
       $this->gh->repository()
         ->collaborators()
         ->add($this->org_name, $repository, $member, ['permission' => $permission]);
-
-      foreach (array_keys($teams) as $team) {
-        if (in_array($member, $teams[$team], TRUE)) {
-          $io->writeln('..Removing from ' . $team);
-          $this->gh->team()
-            ->removeMember($team, $member, $this->org_name);
-        }
-      }
     }
 
-    // @BUG: Teams aren't empty by this point.
-    // GitHub (or our client) cache these endpoints and teams won't always be
-    // empty when this is called, despite not having no members.
-    $io->writeln('Checking for empty teams. This process is unreliable.');
+    $io->warning('The following checks are unreliable due to endpoint caching. Additional followup may be necessary.');
+
+    $io->section('Removing team access');
     foreach (array_keys($teams) as $team) {
-      $adjusted_members = $this->gh->team()->members($team, $this->org_name);
-      if (empty($adjusted_members)) {
-        $io->writeln(sprintf('%s is empty. Removing', $team));
+      $io->text(sprintf('Removing %s access', $team));
+      $this->gh->getHttpClient()->delete(sprintf('orgs/%s/teams/%s/repos/%s/%s', $this->org_name, $team, $this->org_name, $repository));
+    }
+
+    $io->section('Checking for teams with no repository access');
+    foreach (array_keys($teams) as $team) {
+      $response = $this->gh->getHttpClient()->get(sprintf('orgs/%s/teams/%s/repos', $this->org_name, $team));
+      $repos = ResponseMediator::getContent($response);
+      if (!empty($repos)) {
+        $io->text(sprintf('Skipped: %s still has repositories.', $team));
+      }
+      else {
+        $io->text(sprintf('Removed: %s had no repositories.', $team));
         $this->gh->team()->remove($team, $this->org_name);
       }
     }
 
-    $io->writeln('Done!');
+    $io->success('Done!');
 
     return Command::SUCCESS;
   }
