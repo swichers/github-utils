@@ -39,6 +39,15 @@ class ReportRepoInactive extends AbstractReportCommand {
 
     $io->title('Scan for Inactive Repositories');
 
+    $io->text([
+      sprintf('All repositories for %s will be checked.', $this->org_name),
+      '',
+      'A repository is considered inactive if it meets one of the following:',
+      '* No new code for over 6 months',
+      '* It has been archived',
+      '',
+    ]);
+
     $inactive = $this->getReportData($output);
     if (!empty($inactive)) {
       usort($inactive, static function ($a, $b) {
