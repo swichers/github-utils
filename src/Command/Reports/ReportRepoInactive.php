@@ -86,6 +86,10 @@ class ReportRepoInactive extends AbstractReportCommand {
           $ago = '<comment>' . $ago . '</comment>';
         }
 
+        if (!empty($repo['archived'])) {
+          $ago .= ' (<info>Archived</info>)';
+        }
+
         $inactive[] = [$repo['name'], $ago];
       }
     }
