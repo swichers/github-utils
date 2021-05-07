@@ -33,6 +33,13 @@ class RepoConvert extends Command {
   protected static $permissionHierarchy = ['admin', 'push', 'pull'];
 
   /**
+   * Teams to ignore when migrating users to repos.
+   *
+   * @var string[]
+   */
+  protected static $ignoredTeams = [];
+
+  /**
    * A GitHub client instance.
    *
    * @var \Github\Client
@@ -71,7 +78,8 @@ class RepoConvert extends Command {
       ->setDescription('Migrate users from teams to repo members')
       ->setHelp('Migrates the repository\'s teams into users with the same access.')
       ->addArgument('repository', InputArgument::REQUIRED, 'What repository should be migrated?')
-      ->addOption('yes', 'y', InputOption::VALUE_NONE, 'Assume yes to all prompts');
+      ->addOption('yes', 'y', InputOption::VALUE_NONE, 'Assume yes to all prompts')
+      ->addOption('exclude-team', 'x', InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Exclude this team from processing. Option can be used multiple times in one call.');
   }
 
   /**
@@ -80,18 +88,20 @@ class RepoConvert extends Command {
   protected function execute(InputInterface $input, OutputInterface $output): int {
 
     $yes_prompt = $input->getOption('yes') ?? FALSE;
+    $excluded_teams = $input->getOption('exclude-team') ?? [];
+
     $repository = $input->getArgument('repository');
     $repository = preg_replace('/^' . preg_quote($this->org_name, '/') . '\//', '', $repository);
 
     $io = new SymfonyStyle($input, $output);
 
-    $teams = $this->mapTeamsToMembers($repository);
+    $teams = $this->mapTeamsToMembers($repository, $excluded_teams);
     if (empty($teams)) {
       $io->warning('This repository has no teams.');
       return Command::FAILURE;
     }
 
-    $permissions = $this->mapMembersToPermissions($repository);
+    $permissions = $this->mapMembersToPermissions($repository, $excluded_teams);
     if (empty($permissions)) {
       $io->warning('The teams have no members.');
       return Command::FAILURE;
@@ -153,12 +163,14 @@ class RepoConvert extends Command {
    *
    * @param string $repository
    *   The repository to pull information for.
+   * @param string[] $excludedTeams
+   *   A list of team names to exclude.
    *
    * @return array|string[][]
    *   An array of usernames keyed by team name.
    */
-  protected function mapTeamsToMembers(string $repository): array {
-    $teams = $this->gh->repository()->teams($this->org_name, $repository);
+  protected function mapTeamsToMembers(string $repository, array $excludedTeams = []): array {
+    $teams = $this->getTeams($repository, $excludedTeams);
 
     $result = [];
     foreach ($teams as $team) {
@@ -175,12 +187,14 @@ class RepoConvert extends Command {
    *
    * @param string $repository
    *   The repository to pull information for.
+   * @param string[] $excludedTeams
+   *   A list of team names to exclude.
    *
    * @return array|string[]
    *   An array of permission names keyed by username.
    */
-  protected function mapMembersToPermissions(string $repository): array {
-    $teams = $this->gh->repository()->teams($this->org_name, $repository);
+  protected function mapMembersToPermissions(string $repository, array $excludedTeams = []): array {
+    $teams = $this->getTeams($repository, $excludedTeams);
 
     $result = [];
     foreach ($teams as $team) {
@@ -212,6 +226,26 @@ class RepoConvert extends Command {
     }
 
     return $result;
+  }
+
+  /**
+   * Get the list of teams from a repository.
+   *
+   * @param string $repository
+   *   The repository to get team data for.
+   * @param string[] $excludedTeams
+   *   A list of team names to exclude.
+   *
+   * @return array
+   *   The team data.
+   */
+  protected function getTeams(string $repository, array $excludedTeams = []): array {
+    $teams = $this->gh->repository()->teams($this->org_name, $repository);
+
+    // Exclude ignored teams from our decision making.
+    return array_filter($teams, static function ($item) use ($excludedTeams) {
+      return !in_array($item['slug'], array_merge(self::$ignoredTeams, $excludedTeams), TRUE);
+    });
   }
 
 }
