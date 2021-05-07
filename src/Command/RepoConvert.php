@@ -144,7 +144,10 @@ class RepoConvert extends Command {
       }
     }
 
-    $io->writeln('Checking for empty teams');
+    // @BUG: Teams aren't empty by this point.
+    // GitHub (or our client) cache these endpoints and teams won't always be
+    // empty when this is called, despite not having no members.
+    $io->writeln('Checking for empty teams. This process is unreliable.');
     foreach (array_keys($teams) as $team) {
       $adjusted_members = $this->gh->team()->members($team, $this->org_name);
       if (empty($adjusted_members)) {
