@@ -22,7 +22,7 @@ class RepoConvert extends Command {
   /**
    * {@inheritdoc}
    */
-  protected static $defaultName = 'migrate:repo:teams';
+  protected static $defaultName = 'repos:migrate:teams';
 
   /**
    * The permission access hierarchy.

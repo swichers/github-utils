@@ -18,7 +18,7 @@ class ReportTeamEmpty extends AbstractReportCommand {
   /**
    * {@inheritdoc}
    */
-  protected static $defaultName = 'report:teams:empty';
+  protected static $defaultName = 'teams:report:empty';
 
   /**
    * {@inheritdoc}

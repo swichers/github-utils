@@ -20,7 +20,7 @@ class ReportTeamPendingInvites extends AbstractReportCommand {
   /**
    * {@inheritdoc}
    */
-  protected static $defaultName = 'report:teams:pending-invites';
+  protected static $defaultName = 'teams:report:pending-invites';
 
   /**
    * {@inheritdoc}

@@ -19,7 +19,7 @@ class ReportRepoInactive extends AbstractReportCommand {
   /**
    * {@inheritdoc}
    */
-  protected static $defaultName = 'report:repos:dead';
+  protected static $defaultName = 'repos:report:dead';
 
   /**
    * {@inheritdoc}

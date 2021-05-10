@@ -19,7 +19,7 @@ class ReportTeamOrphan extends AbstractReportCommand {
   /**
    * {@inheritdoc}
    */
-  protected static $defaultName = 'report:teams:orphans';
+  protected static $defaultName = 'teams:report:orphans';
 
   /**
    * {@inheritdoc}

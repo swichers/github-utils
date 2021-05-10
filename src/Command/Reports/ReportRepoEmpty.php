@@ -17,7 +17,7 @@ class ReportRepoEmpty extends AbstractReportCommand {
   /**
    * {@inheritdoc}
    */
-  protected static $defaultName = 'report:repos:empty';
+  protected static $defaultName = 'repos:report:empty';
 
   /**
    * {@inheritdoc}

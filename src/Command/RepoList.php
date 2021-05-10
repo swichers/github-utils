@@ -14,7 +14,7 @@ class RepoList extends Command {
   /**
    * {@inheritdoc}
    */
-  protected static $defaultName = 'repo:list';
+  protected static $defaultName = 'repos:list';
 
   /**
    * A GitHub client instance.

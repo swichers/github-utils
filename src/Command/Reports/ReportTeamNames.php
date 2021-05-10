@@ -17,7 +17,7 @@ class ReportTeamNames extends AbstractReportCommand {
   /**
    * {@inheritdoc}
    */
-  protected static $defaultName = 'report:teams:bad-names';
+  protected static $defaultName = 'teams:report:bad-names';
 
   /**
    * {@inheritdoc}

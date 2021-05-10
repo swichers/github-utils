@@ -21,7 +21,7 @@ class ReportRepoPendingInvites extends AbstractReportCommand {
   /**
    * {@inheritdoc}
    */
-  protected static $defaultName = 'report:repos:pending-invites';
+  protected static $defaultName = 'repos:report:pending-invites';
 
   /**
    * {@inheritdoc}
