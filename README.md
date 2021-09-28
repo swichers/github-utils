@@ -12,8 +12,8 @@ cp config/example.local.config.yml config/local.config.yml
 nano config/local.config.yml
 ```
 
-Add your GitHub API key.
+Add your GitHub API key and organization name.
 
 ## Usage
 
-Run `./gh-user-convert` for a list of available commands.
+Run `./bin/gh-utils` for a list of available commands.
