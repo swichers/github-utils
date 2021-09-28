@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Command;
+namespace App\Command\Actions;
 
+use App\Command\AbstractCommand;
 use Github\Client;
 use Github\HttpClient\Message\ResponseMediator;
 use Symfony\Component\Console\Command\Command;
@@ -17,7 +18,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 /**
  * Class RepoConvert
  */
-class RepoConvert extends Command {
+class RepoConvert extends AbstractCommand {
 
   /**
    * {@inheritdoc}
@@ -39,37 +40,6 @@ class RepoConvert extends Command {
    * @var string[]
    */
   protected static $ignoredTeams = [];
-
-  /**
-   * A GitHub client instance.
-   *
-   * @var \Github\Client
-   */
-  protected $gh;
-
-  /**
-   * The GitHub organization name.
-   *
-   * @var string
-   */
-  protected $org_name;
-
-  /**
-   * AbstractReportCommand constructor.
-   *
-   * @param \Github\Client $client
-   *  A ready-to-go GitHub client.
-   * @param string $organizationName
-   *   The GitHub organization to run reports against.
-   * @param string|null $name
-   *   The command name.
-   */
-  public function __construct(Client $client, string $organizationName, string $name = NULL) {
-    parent::__construct($name);
-
-    $this->gh = $client;
-    $this->org_name = $organizationName;
-  }
 
   /**
    * {@inheritdoc}
@@ -151,12 +121,14 @@ class RepoConvert extends Command {
     $io->section('Removing team access');
     foreach (array_keys($teams) as $team) {
       $io->text(sprintf('Removing %s access', $team));
-      $this->gh->getHttpClient()->delete(sprintf('orgs/%s/teams/%s/repos/%s/%s', $this->org_name, $team, $this->org_name, $repository));
+      $this->gh->getHttpClient()
+        ->delete(sprintf('orgs/%s/teams/%s/repos/%s/%s', $this->org_name, $team, $this->org_name, $repository));
     }
 
     $io->section('Checking for teams with no repository access');
     foreach (array_keys($teams) as $team) {
-      $response = $this->gh->getHttpClient()->get(sprintf('orgs/%s/teams/%s/repos', $this->org_name, $team));
+      $response = $this->gh->getHttpClient()
+        ->get(sprintf('orgs/%s/teams/%s/repos', $this->org_name, $team));
       $repos = ResponseMediator::getContent($response);
       if (!empty($repos)) {
         $io->text(sprintf('Skipped: %s still has repositories.', $team));
@@ -194,6 +166,26 @@ class RepoConvert extends Command {
       $result[$team['slug']] = $members;
     }
     return $result;
+  }
+
+  /**
+   * Get the list of teams from a repository.
+   *
+   * @param string $repository
+   *   The repository to get team data for.
+   * @param string[] $excludedTeams
+   *   A list of team names to exclude.
+   *
+   * @return array
+   *   The team data.
+   */
+  protected function getTeams(string $repository, array $excludedTeams = []): array {
+    $teams = $this->gh->repository()->teams($this->org_name, $repository);
+
+    // Exclude ignored teams from our decision making.
+    return array_filter($teams, static function ($item) use ($excludedTeams) {
+      return !in_array($item['slug'], array_merge(self::$ignoredTeams, $excludedTeams), TRUE);
+    });
   }
 
   /**
@@ -240,26 +232,6 @@ class RepoConvert extends Command {
     }
 
     return $result;
-  }
-
-  /**
-   * Get the list of teams from a repository.
-   *
-   * @param string $repository
-   *   The repository to get team data for.
-   * @param string[] $excludedTeams
-   *   A list of team names to exclude.
-   *
-   * @return array
-   *   The team data.
-   */
-  protected function getTeams(string $repository, array $excludedTeams = []): array {
-    $teams = $this->gh->repository()->teams($this->org_name, $repository);
-
-    // Exclude ignored teams from our decision making.
-    return array_filter($teams, static function ($item) use ($excludedTeams) {
-      return !in_array($item['slug'], array_merge(self::$ignoredTeams, $excludedTeams), TRUE);
-    });
   }
 
 }

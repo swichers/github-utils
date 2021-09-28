@@ -3,7 +3,6 @@ imports:
 
 parameters:
   version: 1.0
-  github.org: example-org
 
 services:
   _defaults:

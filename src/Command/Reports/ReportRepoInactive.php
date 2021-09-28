@@ -19,7 +19,7 @@ class ReportRepoInactive extends AbstractReportCommand {
   /**
    * {@inheritdoc}
    */
-  protected static $defaultName = 'repos:report:dead';
+  protected static $defaultName = 'repos:report:inactive';
 
   /**
    * {@inheritdoc}
@@ -74,7 +74,7 @@ class ReportRepoInactive extends AbstractReportCommand {
     foreach ($repos as $repo) {
       $pushed_at = Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $repo['pushed_at']);
       $is_inactive = empty($repo['pushed_at']);
-      $is_inactive |= $repo['archived'] ?: false;
+      $is_inactive |= $repo['archived'] ?: FALSE;
       $is_inactive |= Carbon::now()->subMonths(6)->gt($pushed_at);
       if ($is_inactive) {
         $ago = $pushed_at->ago();

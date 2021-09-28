@@ -54,7 +54,7 @@ class ReportTeamEmpty extends AbstractReportCommand {
    * {@inheritdoc}
    */
   protected function getReportData(OutputInterface $output): array {
-    $slugs = $this->getAllSlugs($this->gh, 'teams');
+    $slugs = $this->getAllSlugs($this->gh, 'teams', [$this->org_name]);
 
     $empty_teams = [];
 

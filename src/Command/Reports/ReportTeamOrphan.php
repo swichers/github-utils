@@ -56,7 +56,8 @@ class ReportTeamOrphan extends AbstractReportCommand {
    */
   protected function getReportData(OutputInterface $output): array {
     $orphans = [];
-    $slugs = $this->getAllSlugs($this->gh, 'teams');
+    $slugs = $this->getAllSlugs($this->gh, 'teams', [$this->org_name]);
+
     $progress = new ProgressBar($output);
     foreach ($progress->iterate($slugs) as $team_name) {
       try {

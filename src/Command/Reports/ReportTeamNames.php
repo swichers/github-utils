@@ -56,7 +56,7 @@ class ReportTeamNames extends AbstractReportCommand {
       'push',
     ];
 
-    $slugs = $this->getAllSlugs($this->gh, 'teams');
+    $slugs = $this->getAllSlugs($this->gh, 'teams', [$this->org_name]);
 
     return array_filter($slugs, static function ($name) use ($expected_suffixes) {
       return !s($name)->lower()->endsWith($expected_suffixes);
