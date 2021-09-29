@@ -12,7 +12,8 @@
     "symfony/console": "^5.2",
     "symfony/dependency-injection": "^5.2",
     "symfony/string": "^5.2",
-    "symfony/yaml": "^5.2"
+    "symfony/yaml": "^5.2",
+    "ext-json": "*"
   },
   "require-dev": {
     "symfony/var-dumper": "^5.2"
