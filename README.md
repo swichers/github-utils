@@ -22,6 +22,7 @@ Run `./bin/gh-utils` for a list of available commands.
 ```
  repos
   repos:autotag                 Automatically tag repositories
+  repos:branch:default          Sets the default branch across all repositories
   repos:branch:rename           Rename the given branch across all repositories
   repos:migrate:teams           Migrate users from teams to repo members
   repos:report:empty            List repositories with no code
